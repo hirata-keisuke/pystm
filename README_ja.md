@@ -5,7 +5,7 @@
 
 R の [stm](https://github.com/bstewart/stm) パッケージ (Roberts, Stewart & Tingley) のコア推定アルゴリズムを Python に移植したものです。API は scikit-learn の `LatentDirichletAllocation` に倣っています。
 
-[English README](README.md)
+[English README](https://github.com/hirata-keisuke/pystm/blob/main/README.md)
 
 ## STM とは
 

@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/structural-topic-model)](https://pypi.org/project/structural-topic-model/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[日本語 README](README_ja.md)
+[日本語 README](https://github.com/hirata-keisuke/pystm/blob/main/README_ja.md)
 
 A Python port of the R [stm](https://github.com/bstewart/stm) package (Roberts, Stewart & Tingley) with a scikit-learn style API.
 
