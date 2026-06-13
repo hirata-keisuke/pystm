@@ -180,6 +180,27 @@ uv sync
 uv run pytest tests/
 ```
 
+## 他プロジェクトからの利用(配布)
+
+配布名・import 名ともに `pystm`。実行時依存は numpy / scipy / scikit-learn のみ
+(janome / dash 等は application 用の dev 依存で、配布物には含まれない)。
+
+```bash
+# ローカルパス参照(開発中)
+uv add --editable /path/to/202606_StructuralTopicModel
+
+# Git 経由
+uv add git+<リポジトリURL>
+
+# wheel
+uv build   # dist/pystm-x.y.z-py3-none-any.whl
+```
+
+注意: PyPI の `pystm` は別の Structural Topic Model 実装
+(github.com/MSusik/stm)に取られている(2026-06 時点)。PyPI 公開する場合は
+配布名を `structural-topic-model` や `py-stm`(ともに空きを確認済み)に変え、
+import 名は `pystm` のまま維持するのがよい。
+
 ## 参考文献
 
 - Roberts, M., Stewart, B., & Tingley, D. (2019). stm: An R Package for Structural Topic Models. *Journal of Statistical Software*, 91(2).
