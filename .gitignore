@@ -1,10 +1,38 @@
-.claude
-.venv
-.pytest_cache
-stm*
-application
-uv.lock
-
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+*.pyd
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Type checkers
+.mypy_cache/
+.ruff_cache/
+
+# IDE / editor
+.claude/
+.idea/
+.vscode/
+
+# Project-specific
+stm*
+application/
+uv.lock

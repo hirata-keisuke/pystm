@@ -103,6 +103,7 @@ check_residuals(model, X)              # 残差分散検定 {dispersion, pvalue,
 | `gamma.prior="Pooled"` (既定) | 実装済み(共変量ありのとき自動) |
 | `sigma.prior` | `sigma_prior` |
 | `emtol` / `max.em.its` | `tol` / `max_iter` |
+| `model=`(フィット済みモデルから再開) | `warm_start=True`(fit を繰り返し呼ぶ。`bound_` に履歴が蓄積) |
 | `content=~group`(`kappa.prior="L1"`, 既定) | `fit(X, content=labels)` |
 | `interactions` | `content_interactions` |
 | `fitNewDocuments()` | `transform()` |
@@ -118,6 +119,8 @@ check_residuals(model, X)              # 残差分散検定 {dispersion, pvalue,
 
 ### scikit-learn LDA との API 差分
 
+- `perplexity(X)` を sklearn LDA と同様に提供(変分下界ベースの `exp(-bound/総トークン数)`。低いほど良い)。
+- `warm_start=True` で sklearn 流の継続学習(R 版 `model=` 相当)。
 - `components_` は正規化済みの確率分布(sklearn LDA は擬似カウント)。
 - 共変量は `fit(X, prevalence=...)` / `transform(X, prevalence=...)` のキーワードで渡す。R の formula は使えないので、カテゴリ変数は事前に one-hot 等で数値化してください(`patsy` や `pandas.get_dummies` が便利)。
 

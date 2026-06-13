@@ -216,6 +216,73 @@ def test_check_residuals(corpus, fitted):
 
 
 # ---------------------------------------------------------------------------
+# warm_start / perplexity
+
+def test_warm_start_continues_em(corpus):
+    X, covar, _, _ = corpus
+    model = StructuralTopicModel(n_components=3, max_iter=3,
+                                 warm_start=True)
+    model.fit(X, prevalence=covar)
+    first_bounds = list(model.bound_)
+    assert len(first_bounds) == 3 and not model.converged_
+
+    model.fit(X, prevalence=covar)
+    # history accumulates and EM resumes monotonically at the junction
+    assert model.bound_[:3] == first_bounds
+    assert len(model.bound_) > 3
+    assert model.bound_[3] >= first_bounds[-1] - 1e-6 * abs(first_bounds[-1])
+    diffs = np.diff(model.bound_)
+    assert (diffs >= -1e-6 * np.abs(np.array(model.bound_)[:-1])).all()
+    assert model.n_iter_ == len(model.bound_)
+
+
+def test_warm_start_matches_cold_fit(corpus):
+    """3+47 warm iterations should land where a single 50-iter fit does."""
+    X, covar, beta_true, _ = corpus
+    warm = StructuralTopicModel(n_components=3, max_iter=3, warm_start=True)
+    warm.fit(X, prevalence=covar)
+    warm.set_params(max_iter=47)
+    warm.fit(X, prevalence=covar)
+    cold = StructuralTopicModel(n_components=3, max_iter=50)
+    cold.fit(X, prevalence=covar)
+    assert warm.bound_[-1] == pytest.approx(cold.bound_[-1], rel=1e-4)
+    _, sims = match_topics(warm.components_, cold.components_)
+    assert sims.min() > 0.999
+
+
+def test_warm_start_false_refits(corpus):
+    X, covar, _, _ = corpus
+    model = StructuralTopicModel(n_components=3, max_iter=3)
+    model.fit(X, prevalence=covar)
+    model.fit(X, prevalence=covar)
+    assert len(model.bound_) <= 3  # history was reset
+
+
+def test_warm_start_rejects_changed_k(corpus):
+    X, covar, _, _ = corpus
+    model = StructuralTopicModel(n_components=3, max_iter=2,
+                                 warm_start=True)
+    model.fit(X, prevalence=covar)
+    model.set_params(n_components=4)
+    with pytest.raises(ValueError, match="n_components"):
+        model.fit(X, prevalence=covar)
+
+
+def test_perplexity(corpus, fitted):
+    X, covar, _, _ = corpus
+    perp = fitted.perplexity(X, prevalence=covar)
+    assert np.isfinite(perp) and perp > 0
+    # definition: exp(-bound / n_tokens)
+    score = fitted.score(X, prevalence=covar)
+    assert perp == pytest.approx(np.exp(-score / X.sum()), rel=1e-6)
+    # a barely-trained model should be more perplexed
+    rough = StructuralTopicModel(n_components=3, init="random",
+                                 max_iter=1, random_state=0)
+    rough.fit(X, prevalence=covar)
+    assert rough.perplexity(X, prevalence=covar) > perp
+
+
+# ---------------------------------------------------------------------------
 # heldout / search_k
 
 def test_make_heldout_conserves_tokens(corpus):
