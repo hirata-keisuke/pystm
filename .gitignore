@@ -34,5 +34,6 @@ htmlcov/
 
 # Project-specific
 stm*
+!pystm/stm.py
 application/
 uv.lock
