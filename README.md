@@ -186,20 +186,23 @@ uv run pytest tests/
 (janome / dash 等は application 用の dev 依存で、配布物には含まれない)。
 
 ```bash
+# PyPI からインストール
+pip install structural-topic-model
+# または
+uv add structural-topic-model
+
 # ローカルパス参照(開発中)
 uv add --editable /path/to/202606_StructuralTopicModel
 
 # Git 経由
 uv add git+<リポジトリURL>
 
-# wheel
-uv build   # dist/pystm-x.y.z-py3-none-any.whl
+# wheel をビルド
+uv build   # dist/structural_topic_model-x.y.z-py3-none-any.whl
 ```
 
-注意: PyPI の `pystm` は別の Structural Topic Model 実装
-(github.com/MSusik/stm)に取られている(2026-06 時点)。PyPI 公開する場合は
-配布名を `structural-topic-model` や `py-stm`(ともに空きを確認済み)に変え、
-import 名は `pystm` のまま維持するのがよい。
+配布名は `structural-topic-model`、import 名は `pystm` のまま維持しています
+(PyPI の `pystm` は別の実装に取られているため)。
 
 ## 参考文献
 
