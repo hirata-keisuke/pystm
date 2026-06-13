@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from pystm import (
+from stm import (
     StructuralTopicModel,
     check_residuals,
     estimate_effect,

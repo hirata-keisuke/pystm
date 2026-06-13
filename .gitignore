@@ -33,7 +33,6 @@ htmlcov/
 .vscode/
 
 # Project-specific
-stm*
-!pystm/stm.py
+stm_r*
 application/
 uv.lock

@@ -46,8 +46,11 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [tool.hatch.build.targets.wheel]
-packages = ["pystm"]
+packages = ["stm"]
 
 [tool.hatch.build.targets.sdist]
-only-include = ["pystm", "tests", "scripts", "README.md", "README_ja.md", "LICENSE"]
+only-include = ["stm", "tests", "scripts", "README.md", "README_ja.md", "LICENSE"]

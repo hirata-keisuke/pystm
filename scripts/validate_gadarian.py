@@ -38,10 +38,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 from gadarian_prep import load_gadarian, prep_documents, text_processor
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from pystm import StructuralTopicModel, estimate_effect
-from pystm._estep import estep
-from pystm._mstep import opt_beta, opt_mu, opt_sigma
-from pystm._utils import row_softmax, to_doc_list
+from stm import StructuralTopicModel, estimate_effect
+from stm._estep import estep
+from stm._mstep import opt_beta, opt_mu, opt_sigma
+from stm._utils import row_softmax, to_doc_list
 
 PASS = []
 

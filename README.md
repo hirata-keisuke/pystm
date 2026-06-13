@@ -1,4 +1,4 @@
-# pystm — Structural Topic Model in Python
+# stm — Structural Topic Model in Python
 
 [![PyPI](https://img.shields.io/pypi/v/structural-topic-model)](https://pypi.org/project/structural-topic-model/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -21,7 +21,7 @@ pip install structural-topic-model
 
 ```python
 import numpy as np
-from pystm import StructuralTopicModel
+from stm import StructuralTopicModel
 
 # X: (n_docs, n_vocab) word count matrix (dense or scipy.sparse)
 # covar: (n_docs, n_covariates) prevalence covariate matrix (intercept added automatically)
@@ -70,7 +70,7 @@ Estimated via Distributed Poisson regression (equivalent to the R package's defa
 Regress topic proportions on covariates using method of composition, returning coefficients with measurement uncertainty:
 
 ```python
-from pystm import estimate_effect
+from stm import estimate_effect
 
 eff = estimate_effect(model, covar, uncertainty="Global", nsims=25)
 tables = eff.summary()      # {topic: structured array with estimate/std_error/t_value/p_value}
@@ -80,7 +80,7 @@ tables[0]["estimate"]       # coefficients for topic 0 (first entry is intercept
 ## Topic Selection (searchK)
 
 ```python
-from pystm import search_k
+from stm import search_k
 
 res = search_k(X, K_values=[5, 10, 15], prevalence=covar,
                model_params={"max_iter": 100})
@@ -93,7 +93,7 @@ res["exclus"]    # exclusivity
 ## Diagnostics
 
 ```python
-from pystm import topic_corr, semantic_coherence, exclusivity, check_residuals
+from stm import topic_corr, semantic_coherence, exclusivity, check_residuals
 
 tc = topic_corr(model, cutoff=0.01)    # topic correlation graph (simple method)
 tc.posadj                               # positive correlation adjacency matrix

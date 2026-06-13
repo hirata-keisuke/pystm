@@ -1,4 +1,4 @@
-"""Tests for pystm.StructuralTopicModel.
+"""Tests for stm.StructuralTopicModel.
 
 Validation strategy (no R available for direct comparison):
 - ELBO increases over EM iterations and converges,
@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from scipy.optimize import linear_sum_assignment
 
-from pystm import StructuralTopicModel
+from stm import StructuralTopicModel
 
 
 def make_corpus(n_docs=200, n_topics=3, vocab_size=60, doc_len=80,
