@@ -25,6 +25,11 @@ dependencies = [
     "scipy>=1.14",
 ]
 
+[project.urls]
+Homepage = "https://github.com/hirata-keisuke/pystm"
+Repository = "https://github.com/hirata-keisuke/pystm"
+Issues = "https://github.com/hirata-keisuke/pystm/issues"
+
 [dependency-groups]
 dev = [
     "dash>=4.2.0",
