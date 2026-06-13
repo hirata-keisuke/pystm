@@ -1,6 +1,6 @@
 [project]
 name = "structural-topic-model"
-version = "0.2.2"
+version = "0.3.0"
 description = "Python implementation of the Structural Topic Model (STM), a port of the R stm package with a scikit-learn style API"
 readme = "README.md"
 requires-python = ">=3.12"
