@@ -1,6 +1,6 @@
 [project]
 name = "structural-topic-model"
-version = "0.3.1"
+version = "1.0.0"
 description = "Python implementation of the Structural Topic Model (STM), a port of the R stm package with a scikit-learn style API"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -11,7 +11,7 @@ authors = [
 ]
 keywords = ["topic model", "structural topic model", "STM", "NLP", "text mining"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",

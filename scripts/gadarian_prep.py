@@ -3,12 +3,22 @@
 Mirrors textProcessor() (tm pipeline: lowercase, punctuation/stopword/
 number removal, Snowball stemming, wordLengths=c(3,Inf)) followed by
 prepDocuments(lower.thresh=1).
+
+.. note::
+
+   Developer-only helper for ``validate_gadarian.py``.  ``load_gadarian``
+   reads the reference ``.RData`` files bundled with the original R ``stm``
+   sources under ``stm_r/data/``.  That directory is git-ignored and not
+   shipped with the package, so this loader only works in a local checkout
+   that contains the R sources; it is intentionally absent from CI and from
+   installed copies of the package.
 """
 
 from __future__ import annotations
 
 import re
 import warnings
+from pathlib import Path
 
 import numpy as np
 import snowballstemmer
@@ -95,12 +105,23 @@ def prep_documents(token_docs, lower_thresh=1):
     return X, vocab, removed_docs
 
 
-def load_gadarian(stm_data_dir="stm/data"):
-    """Load the gadarian study data and the R-fitted reference model."""
+def load_gadarian(stm_data_dir=None):
+    """Load the gadarian study data and the R-fitted reference model.
+
+    The reference ``.RData`` files ship with the bundled R sources under
+    ``stm_r/data``; resolve that relative to this file so the loader works
+    regardless of the current working directory.
+    """
     import rdata
+
+    if stm_data_dir is None:
+        stm_data_dir = Path(__file__).resolve().parent.parent / "stm_r" / "data"
+    stm_data_dir = Path(stm_data_dir)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        gadarian = rdata.read_rda(f"{stm_data_dir}/gadarian.RData")["gadarian"]
-        fit = rdata.read_rda(f"{stm_data_dir}/gadarianFit.RData")["gadarianFit"]
+        gadarian = rdata.read_rda(
+            stm_data_dir / "gadarian.RData")["gadarian"]
+        fit = rdata.read_rda(
+            stm_data_dir / "gadarianFit.RData")["gadarianFit"]
     return gadarian, fit

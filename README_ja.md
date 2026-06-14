@@ -146,7 +146,9 @@ check_residuals(model, X)              # 残差分散検定 {dispersion, pvalue,
 - `perplexity(X)` を提供（変分下界ベースの `exp(-bound/総トークン数)`。低いほど良い）。
 - `warm_start=True` で継続学習が可能（R 版 `model=` 相当）。
 
-### 未実装
+### 今後の拡張候補
+
+STM のコア（推定・prevalence/content 共変量・効果推定・診断・トピック数選択）は実装済みで、R 版との数値一致も検証しています。以下は R 版にあるが本実装では未対応の機能で、要望や必要に応じて追加していく候補です（現時点で実装予定が確定しているものではありません）。
 
 - `gamma.prior="L1"`（prevalence 側の glmnet 依存モード）
 - `kappa.prior="Jeffreys"`（content の旧推定法）

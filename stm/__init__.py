@@ -4,6 +4,8 @@ A port of the R ``stm`` package (Roberts, Stewart & Tingley) with an API
 modeled on scikit-learn's ``LatentDirichletAllocation``.
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
 from .diagnostics import (
     TopicCorrelations,
     check_residuals,
@@ -28,4 +30,8 @@ __all__ = [
     "exclusivity",
     "check_residuals",
 ]
-__version__ = "0.2.0"
+try:
+    # single source of truth: the version declared in pyproject.toml
+    __version__ = version("structural-topic-model")
+except PackageNotFoundError:  # running from a source tree without an install
+    __version__ = "unknown"

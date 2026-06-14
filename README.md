@@ -149,7 +149,13 @@ check_residuals(model, X)              # residual dispersion test {dispersion, p
 - `perplexity(X)` is provided, computed from the variational lower bound (`exp(-bound / n_tokens)`); lower is better.
 - `warm_start=True` enables continued learning across repeated `fit()` calls (cf. R's `model=` argument).
 
-### Not Implemented
+### Possible Future Extensions
+
+The core of STM (estimation, prevalence/content covariates, effect
+estimation, diagnostics, topic-count selection) is implemented and validated
+for numerical agreement with the R package. The following R features are not
+yet covered; they are candidates to add on demand rather than a committed
+roadmap.
 
 - `gamma.prior="L1"` (prevalence-side glmnet mode)
 - `kappa.prior="Jeffreys"` (legacy content estimation)

@@ -1,5 +1,15 @@
 """Validate pystm against the R stm package's gadarianFit reference model.
 
+.. note::
+
+   This is a *developer-only* tool, not part of the installable package or
+   the automated test suite.  It reads the reference ``.RData`` files that
+   ship with the original R ``stm`` sources (``stm_r/data/``).  Those R
+   sources are deliberately git-ignored and excluded from the distribution,
+   so this script will not run in CI or for end users -- only in a local
+   checkout that also contains the ``stm_r/`` directory.  The self-contained
+   tests in ``tests/`` (synthetic data, no R dependency) are what CI runs.
+
 gadarianFit ships with the R package and is the fitted model from the
 Gadarian & Albertson immigration study used in Roberts et al. (2014,
 AJPS) and the package vignette: K=3 topics, prevalence =

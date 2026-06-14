@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      # The test suite (tests/) is self-contained: it uses only synthetic
+      # data and the package's core dependencies, so no R sources or R data
+      # are needed.  (scripts/validate_gadarian.py validates against the R
+      # stm package's bundled .RData and is a developer-only tool that is
+      # intentionally not run here -- those R sources are git-ignored.)
+      - name: Run tests
+        run: uv run --no-dev --with pytest --python 3.12 pytest tests/ -q
