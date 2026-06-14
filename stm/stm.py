@@ -34,7 +34,10 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     n_components : int, default=10
-        Number of topics K (must be >= 2).
+        Number of topics K (must be >= 2).  Set to ``0`` to choose the
+        number of topics automatically from the data with the Lee & Mimno
+        (2014) algorithm (requires ``init="spectral"``); the value used is
+        then exposed as :attr:`n_components_`.
     init : {"spectral", "random"}, default="spectral"
         Initialization method.  "spectral" is the deterministic anchor-word
         algorithm of Arora et al. (2013), recommended by the stm authors.
@@ -65,8 +68,9 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
         setup must stay the same; per-document state is reused only when
         the corpus has the same number of documents.
     random_state : int, RandomState or None, default=None
-        Only used for ``init="random"``; the spectral method is
-        deterministic.
+        Used for ``init="random"`` and for the t-SNE projection of the
+        automatic topic count (``n_components=0``).  The ordinary spectral
+        method with a fixed K is deterministic and ignores it.
     verbose : int, default=0
         If positive, print the bound after each EM iteration.
 
@@ -100,6 +104,10 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
         Approximate evidence lower bound at each EM iteration.
     n_iter_ : int
         Number of EM iterations run.
+    n_components_ : int
+        Number of topics actually used.  Equal to ``n_components`` unless
+        ``n_components=0`` was requested, in which case it is the topic
+        count selected by the Lee & Mimno (2014) algorithm.
     converged_ : bool
         Whether the bound converged before ``max_iter``.
 
@@ -210,12 +218,20 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
             distributed Poisson regression as in the R package's L1 mode).
         """
         K = self.n_components
-        if not (isinstance(K, (int, np.integer)) and K >= 2):
-            raise ValueError("n_components must be an integer >= 2.")
+        if not (isinstance(K, (int, np.integer)) and (K >= 2 or K == 0)):
+            raise ValueError(
+                "n_components must be an integer >= 2, or 0 to select the "
+                "number of topics automatically (Lee & Mimno 2014)."
+            )
         if not 0.0 <= self.sigma_prior <= 1.0:
             raise ValueError("sigma_prior must be between 0 and 1.")
         if self.init not in ("spectral", "random"):
             raise ValueError("init must be 'spectral' or 'random'.")
+        if K == 0 and self.init != "spectral":
+            raise ValueError(
+                "n_components=0 (automatic topic count) requires "
+                "init='spectral'."
+            )
 
         warm = self.warm_start and hasattr(self, "components_")
         X, design = self._validate_inputs(X, prevalence, reset=not warm)
@@ -225,6 +241,9 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
         if warm:
             # ---- continue from the previous solution (cf. the R
             #      package's model= restart argument) ----
+            if K == 0:
+                # the topic count was already fixed by the first fit
+                K = self.components_.shape[0]
             if self.components_.shape[0] != K:
                 raise ValueError(
                     f"warm_start requires the same n_components as the "
@@ -256,7 +275,10 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
 
             # ---- initialization (stm.init) ----
             if self.init == "spectral":
-                init_beta = spectral_init(X, K, max_vocab=self.max_vocab)
+                init_beta, K = spectral_init(
+                    X, K, max_vocab=self.max_vocab,
+                    random_state=self.random_state,
+                )
             else:
                 rng = check_random_state(self.random_state)
                 b = rng.gamma(0.1, 1.0, size=(K, V))
@@ -328,6 +350,9 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
         self.n_iter_ = len(bound_history)
         self.converged_ = converged
         self.n_features_in_ = V
+        # K may have been chosen automatically (n_components=0); expose the
+        # value actually used following the sklearn fitted-attribute convention
+        self.n_components_ = K
         return self
 
     def fit_transform(self, X, y=None, *, prevalence=None, content=None):
@@ -371,7 +396,7 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
         X, design = self._validate_inputs(X, prevalence, reset=False)
         docs = to_doc_list(X)
         N = X.shape[0]
-        K = self.n_components
+        K = self.n_components_
         _, beta_index = self._encode_content(content, N, reset=False)
         beta = self._beta_list()
         mu, update_mu = self._new_doc_priors(design)
@@ -393,7 +418,7 @@ class StructuralTopicModel(BaseEstimator, TransformerMixin):
         X, design = self._validate_inputs(X, prevalence, reset=False)
         docs = to_doc_list(X)
         N = X.shape[0]
-        K = self.n_components
+        K = self.n_components_
         _, beta_index = self._encode_content(content, N, reset=False)
         mu, update_mu = self._new_doc_priors(design)
         _, _, bound, _ = estep(

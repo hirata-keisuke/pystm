@@ -77,6 +77,18 @@ tables = eff.summary()      # {topic: 構造化配列（estimate/std_error/t_val
 tables[0]["estimate"]       # トピック 0 の回帰係数（先頭が切片）
 ```
 
+## トピック数の自動選択（K=0 / Lee & Mimno 2014）
+
+`n_components=0` を渡すと、spectral 初期化の過程でトピック数をデータから自動決定します（R 版の `K=0`）。row-normalize した gram 行列を t-SNE で 3 次元に射影し、その凸包の頂点をアンカー語とする手法で、頂点の数がそのままトピック数になります：
+
+```python
+model = StructuralTopicModel(n_components=0, init="spectral").fit(X)
+model.n_components_   # 自動決定されたトピック数 K
+model.components_     # (K, V)
+```
+
+`n_components=0` は `init="spectral"` のときのみ使えます。
+
 ## トピック数の選択（searchK 相当）
 
 ```python
@@ -109,6 +121,7 @@ check_residuals(model, X)              # 残差分散検定 {dispersion, pvalue,
 | `stm(docs, vocab, K, prevalence=~x, data=meta)` | `StructuralTopicModel(n_components=K).fit(X, prevalence=design)` |
 | `init.type="Spectral"`（推奨・既定） | `init="spectral"`（既定） |
 | `init.type="Random"` | `init="random"` |
+| `K=0`（Lee & Mimno 2014, トピック数自動選択） | `n_components=0`（`init="spectral"`） |
 | `gamma.prior="Pooled"`（既定） | 実装済み（共変量ありのとき自動） |
 | `sigma.prior` | `sigma_prior` |
 | `emtol` / `max.em.its` | `tol` / `max_iter` |
@@ -138,7 +151,7 @@ check_residuals(model, X)              # 残差分散検定 {dispersion, pvalue,
 - `gamma.prior="L1"`（prevalence 側の glmnet 依存モード）
 - `kappa.prior="Jeffreys"`（content の旧推定法）
 - `fixedintercept=FALSE`
-- LDA（collapsed Gibbs）初期化、`ngroups` メモ化推論、`K=0`（Lee & Mimno）
+- LDA（collapsed Gibbs）初期化、`ngroups` メモ化推論
 - `estimateEffect()` の `uncertainty="Local"`、formula インターフェース（スプライン `s()` 等は事前に基底展開した行列を渡せば等価）
 - `topicCorr(method="huge")`、`selectModel()`、`permutationTest()`、プロット関数群
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.optimize import nnls
 from scipy.sparse import csr_matrix
+from scipy.spatial import ConvexHull
 
 
 def gram(mat: csr_matrix) -> np.ndarray:
@@ -48,6 +49,62 @@ def fast_anchor(Qbar: np.ndarray, K: int) -> np.ndarray:
         row_squared_sums = (Qbar**2).sum(axis=1)
         row_squared_sums[basis[: i + 1]] = 0.0
     return basis
+
+
+def tsne_anchor(Qbar: np.ndarray, random_state=None) -> np.ndarray:
+    """Anchor word selection by the Lee & Mimno (2014) algorithm (K=0).
+
+    Project the row-normalized gram matrix to three dimensions with
+    t-SNE and take the vertices of the convex hull of the projection as
+    the anchor words.  The number of anchors found determines the number
+    of topics, so this is the data-driven way to choose K (R's
+    ``K=0`` / ``tsneAnchor``).
+
+    Duplicate rows of ``Qbar`` make t-SNE fail; following the R package
+    we add a touch of noise to the non-zero entries of duplicate rows and
+    renormalize before retrying.
+    """
+    from sklearn.manifold import TSNE
+
+    rng = np.random.default_rng(
+        random_state if isinstance(random_state, (int, np.integer)) else None
+    )
+
+    def _project(mat):
+        # perplexity must stay below the number of samples
+        perplexity = min(30.0, max(5.0, (mat.shape[0] - 1) / 3.0))
+        tsne = TSNE(
+            n_components=3,
+            perplexity=perplexity,
+            init="pca",
+            random_state=random_state
+            if isinstance(random_state, (int, np.integer))
+            else 0,
+        )
+        return tsne.fit_transform(mat)
+
+    try:
+        proj = _project(Qbar)
+    except ValueError:
+        # most likely caused by duplicate rows; jitter them and retry
+        Qbar = Qbar.copy()
+        _, inverse, counts = np.unique(
+            Qbar, axis=0, return_inverse=True, return_counts=True
+        )
+        dup = np.where(counts[inverse] > 1)[0]
+        for r in dup:
+            row = Qbar[r]
+            nz = row > 0
+            row[nz] = rng.uniform(0.0, 1e-5, size=int(nz.sum()))
+            s = row.sum()
+            if s > 0:
+                row /= s
+            Qbar[r] = row
+        proj = _project(Qbar)
+
+    hull = ConvexHull(proj)
+    anchors = np.sort(np.unique(hull.vertices))
+    return anchors
 
 
 def expgrad(X, y, XtX=None, alpha=None, tol=1e-7, max_iter=500):
@@ -112,8 +169,21 @@ def recover_l2(Qbar, anchors, wprob, solver="nnls"):
 
 
 def spectral_init(X: csr_matrix, K: int, max_vocab: int | None = 10000,
-                  solver: str = "nnls") -> np.ndarray:
-    """Spectral initialization of beta (the Spectral branch of stm.init)."""
+                  solver: str = "nnls", random_state=None):
+    """Spectral initialization of beta (the Spectral branch of stm.init).
+
+    ``K=0`` triggers the Lee & Mimno (2014) data-driven topic count: the
+    anchors (and hence K) are chosen by :func:`tsne_anchor`.  The number
+    of topics actually used is always returned alongside ``beta`` so the
+    caller can size the remaining parameters.
+
+    Returns
+    -------
+    beta : ndarray of shape (K, V)
+    K : int
+        The number of topics, equal to the input ``K`` unless ``K=0`` was
+        requested, in which case it is the number of anchors found.
+    """
     V = X.shape[1]
     if K >= V:
         raise ValueError(
@@ -139,7 +209,11 @@ def spectral_init(X: csr_matrix, K: int, max_vocab: int | None = 10000,
         wprob = wprob[nonzero]
     Qbar = Q / Qsums[:, None]
 
-    anchors = fast_anchor(Qbar, K)
+    if K == 0:
+        anchors = tsne_anchor(Qbar, random_state=random_state)
+        K = len(anchors)
+    else:
+        anchors = fast_anchor(Qbar, K)
     beta = recover_l2(Qbar, anchors, wprob, solver=solver)
 
     if keep is not None:
@@ -148,4 +222,4 @@ def spectral_init(X: csr_matrix, K: int, max_vocab: int | None = 10000,
         beta_new[:, keep] = beta
         beta_new += 0.001 / V
         beta = beta_new / beta_new.sum(axis=1, keepdims=True)
-    return beta
+    return beta, K

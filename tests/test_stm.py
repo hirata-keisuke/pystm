@@ -228,3 +228,48 @@ def test_input_validation():
         StructuralTopicModel(n_components=3).fit(
             np.ones((5, 10)), prevalence=np.ones((4, 1))
         )
+
+
+# ---------------------------------------------------------------------------
+# K=0: automatic topic count (Lee & Mimno 2014)
+
+
+@pytest.fixture(scope="module")
+def fitted_k0(corpus):
+    X, covar, _, _ = corpus
+    model = StructuralTopicModel(
+        n_components=0, init="spectral", max_iter=30, random_state=0
+    )
+    model.fit(X, prevalence=covar)
+    return model
+
+
+def test_k0_chooses_topic_count(fitted_k0):
+    K = fitted_k0.n_components_
+    # K is data-driven and must be a consistent, usable value
+    assert isinstance(K, (int, np.integer))
+    assert K >= 2
+    assert fitted_k0.components_.shape[0] == K
+    assert fitted_k0.theta_.shape[1] == K
+    assert fitted_k0.sigma_.shape == (K - 1, K - 1)
+
+
+def test_k0_components_are_distributions(fitted_k0):
+    beta = fitted_k0.components_
+    assert np.all(beta >= 0)
+    assert np.allclose(beta.sum(axis=1), 1.0)
+
+
+def test_k0_transform_and_score(corpus, fitted_k0):
+    X, covar, _, _ = corpus
+    theta = fitted_k0.transform(X[:5], prevalence=covar[:5])
+    assert theta.shape == (5, fitted_k0.n_components_)
+    assert np.allclose(theta.sum(axis=1), 1.0)
+    assert np.isfinite(fitted_k0.score(X[:5], prevalence=covar[:5]))
+
+
+def test_k0_requires_spectral():
+    with pytest.raises(ValueError, match="spectral"):
+        StructuralTopicModel(n_components=0, init="random").fit(
+            np.ones((5, 10))
+        )

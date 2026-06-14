@@ -77,6 +77,21 @@ tables = eff.summary()      # {topic: structured array with estimate/std_error/t
 tables[0]["estimate"]       # coefficients for topic 0 (first entry is intercept)
 ```
 
+## Automatic Topic Count (K=0 / Lee & Mimno 2014)
+
+Passing `n_components=0` lets the spectral initialization choose the number
+of topics from the data (R's `K=0`).  The row-normalized gram matrix is
+projected to three dimensions with t-SNE and the vertices of its convex
+hull become the anchor words, so the number of vertices is the topic count:
+
+```python
+model = StructuralTopicModel(n_components=0, init="spectral").fit(X)
+model.n_components_   # number of topics chosen automatically
+model.components_     # (K, V)
+```
+
+`n_components=0` is only available with `init="spectral"`.
+
 ## Topic Selection (searchK)
 
 ```python
@@ -109,6 +124,7 @@ check_residuals(model, X)              # residual dispersion test {dispersion, p
 | `stm(docs, vocab, K, prevalence=~x, data=meta)` | `StructuralTopicModel(n_components=K).fit(X, prevalence=design)` |
 | `init.type="Spectral"` (recommended, default) | `init="spectral"` (default) |
 | `init.type="Random"` | `init="random"` |
+| `K=0` (Lee & Mimno 2014, automatic topic count) | `n_components=0` (`init="spectral"`) |
 | `gamma.prior="Pooled"` (default) | implemented (automatic when covariates are present) |
 | `sigma.prior` | `sigma_prior` |
 | `emtol` / `max.em.its` | `tol` / `max_iter` |
@@ -138,7 +154,7 @@ check_residuals(model, X)              # residual dispersion test {dispersion, p
 - `gamma.prior="L1"` (prevalence-side glmnet mode)
 - `kappa.prior="Jeffreys"` (legacy content estimation)
 - `fixedintercept=FALSE`
-- LDA (collapsed Gibbs) initialization, `ngroups` memoized inference, `K=0` (Lee & Mimno)
+- LDA (collapsed Gibbs) initialization, `ngroups` memoized inference
 - `estimateEffect()` with `uncertainty="Local"`, formula interface (pass pre-expanded basis matrices instead)
 - `topicCorr(method="huge")`, `selectModel()`, `permutationTest()`, plot functions
 

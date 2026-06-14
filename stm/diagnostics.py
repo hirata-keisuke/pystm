@@ -56,7 +56,7 @@ def semantic_coherence(model, X, content=None, M=10):
         )
     levels = model.content_levels_
     index = np.searchsorted(levels, np.asarray(content).ravel())
-    result = np.zeros(model.n_components)
+    result = np.zeros(model.components_.shape[0])
     for a in range(len(levels)):
         subset = index == a
         if not subset.any():
@@ -98,7 +98,7 @@ def check_residuals(model, X, content=None, tol=0.01):
     """
     X = _as_csr(X)
     n, V = X.shape
-    K = model.n_components
+    K = model.components_.shape[0]
     theta = model.theta_
     if theta.shape[0] != n:
         raise ValueError("X must be the corpus the model was fitted on.")
