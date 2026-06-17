@@ -36,3 +36,5 @@ htmlcov/
 stm_r*
 application/
 uv.lock
+verification/output
+verification/shared
