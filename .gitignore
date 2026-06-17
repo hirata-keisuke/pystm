@@ -34,7 +34,6 @@ htmlcov/
 
 # Project-specific
 stm_r*
-application/
 uv.lock
 verification/output
 verification/shared

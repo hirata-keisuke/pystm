@@ -10,10 +10,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v8
+        # This repo does not commit a uv.lock (it is git-ignored) and the
+        # test job resolves a small dependency set on the fly, so dependency
+        # caching has nothing to key on; disable it to avoid the
+        # "no file matched to uv.lock" warning.
+        with:
+          enable-cache: false
 
       - name: Set up Python
         run: uv python install 3.12
